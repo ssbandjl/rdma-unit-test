@@ -1,0 +1,44 @@
+git_repo: https://github.com/google/rdma-unit-test
+
+
+docker run -it -d --privileged --cap-add=ALL --name rdma_ut -v /root/project/rdma/rdma-unit-test:/root/project/rdma/rdma-unit-test roboxes/centos8:latest
+docker exec -it -u root rdma_ut /bin/bash
+
+install:
+yum install libibverbs-devel -y
+
+https://docs.bazel.build/versions/5.4.1/install-redhat.html
+
+NO:
+cat <<EOF | sudo tee /etc/yum.repos.d/bazel.repo
+[copr:copr.fedorainfracloud.org:vbatts:bazel]
+name=Copr repo for bazel owned by vbatts
+baseurl=https://download.copr.fedorainfracloud.org/results/vbatts/bazel/epel-7-$basearch/
+type=rpm-md
+skip_if_unavailable=True
+gpgcheck=1
+gpgkey=https://download.copr.fedorainfracloud.org/results/vbatts/bazel/pubkey.gpg
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1
+EOF
+
+yum install bazel4 -y
+
+YES:
+dnf config-manager --add-repo https://copr.fedorainfracloud.org/coprs/vbatts/bazel/repo/epel-8/vbatts-bazel-epel-8.repo
+# dnf install bazel
+yum install bazel4 -y  # Current Bazel version is 1.2.1, expected at least 3.0.0, or yum remove bazel
+bazel --version
+bazel 4.2.1
+
+
+
+
+build:
+bazel test ... --test_output=all --test_arg=--verbs_mtu=1024 --test_arg=--ipv4_only
+
+
+
+
+
